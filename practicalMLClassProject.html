@@ -63,16 +63,16 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h1>Analysis of Weight Lifting Dataset</h1>
 <div id="overview" class="section level3">
 <h3>Overview</h3>
-<p>A machine learning algorithm was build to predict weight lifting quality from activity motion monitoring data. A random forest approach was used with a 70/30 cross-validation split on the training dataset. Analysis was confined to the 36 numeric feature variables tied to (x,y,z). The random forest out-of-bag (OOB) error was estimated to be 1.3% and the cross validation out-of-sample error was 1.1%.</p>
+<p>A machine learning algorithm was built to predict weight lifting quality from activity motion monitoring data. A random forest approach was used with a 70/30 cross-validation split on the training dataset. Analysis was confined to the 36 numeric feature variables tied to (x,y,z). The random forest out-of-bag (OOB) error was estimated to be 1.4% and the cross validation out-of-sample error was 1.2%.</p>
 <p>This data indicates that these types of sensors could be used to provide real time feedback to an individual on the quality of their weight lifting exercises.</p>
 </div>
 <div id="data-preparation" class="section level3">
 <h3>Data Preparation</h3>
 <p>The training dataset was downloaded from : <a href="https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv">https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv</a></p>
-<p>It consists of 19622 observations of the Unilateral Dumbbell Bicepts Curl weight lift performed by volunteers who did them correctly and incorrectly with measurement equipment attached. A detailed description can be found in the study publication at : <a href="http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf">http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf</a></p>
+<p>It consists of 19,622 observations of the Unilateral Dumbbell Bicepts Curl weight lift performed by volunteers who did them correctly and incorrectly with measurement equipment attached. A detailed description can be found in the study publication at : <a href="http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf">http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf</a></p>
 <p>The dataset has 160 columns (1 y-result and 159 X-features).</p>
 <p>The y-result (classe) consists of 5 possible outcomes:<br />A = lift performed correctly<br />B = throwing the elbows to the front<br />C = lifting the dumbbell only halfway<br />D = lowering the dumbbell only halfway<br />E = throwing the hips to the front</p>
-<p>The R libraries and code to load the data are shown below. An outlier magnet dumbbell datapoint is set to the class mean.</p>
+<p>The R libraries and code to load the data are shown below. An outlier magnet dumbbell datapoint is set to its class mean.</p>
 <pre class="r"><code>library(caret)</code></pre>
 <pre><code>## Loading required package: lattice
 ## Loading required package: ggplot2</code></pre>
@@ -89,7 +89,7 @@ raw.train$magnet_dumbbell_y[which(raw.train$magnet_dumbbell_y ==
     mean(raw.train$magnet_dumbbell_y[which(raw.train$classe==&quot;B&quot; &amp;
                                           raw.train$magnet_dumbbell_y &lt; 0)])</code></pre>
 <p>This raw training dataset is split into a training dataset (70%) and a cross validation test dataset (30%).</p>
-<p>For missing values (NAs), the features either had no missing data or 13435 missing observations (98%). Based on this, any features with missing values were eliminated reducing the feature count from 159 to 92. To simplify the analysis, the features were further downselected to the 36 that include the (x,y,z) axes. These consist of the combinations of three measuring devices (accelerometer, gyroscope, magnetometer), four attachement locations (belt, arm, forearm, dumbbell) and measurements along the three axes (x,y,z). Based on the motion physics of lifting dumbbells, these features should be sufficient to predict the desired quality outcomes.</p>
+<p>For missing values (NAs), the features either had no missing data or 13,435 (98%) missing observations. Based on this, any features with missing values were eliminated reducing the feature count from 159 to 92. To further simplify the analysis, the features were downselected to the 36 that include the (x,y,z) axes. These consist of the combinations of three measuring devices (accelerometer, gyroscope, magnetometer), four attachement locations (belt, arm, forearm, dumbbell) and measurements along the three axes (x,y,z). Based on the motion physics of lifting dumbbells, these features should be sufficient to predict the desired quality outcomes.</p>
 <pre class="r"><code># Create cross-validation partition
 set.seed(333)
 trainIndex = createDataPartition(raw.train$classe, p=0.70,list=FALSE)
@@ -108,7 +108,9 @@ training2 &lt;- training1[,c(grep(&quot;_x&quot;,cn),grep(&quot;_y&quot;,cn),gre
 cn &lt;- names(training2)
 training3 &lt;- training2[,-c(grep(&quot;yaw&quot;,cn))]
 # re-assemble with outcomes 
-training4 &lt;- cbind(classe=training$classe, training3)</code></pre>
+training4 &lt;- cbind(classe=training$classe, training3)
+dim(training4)</code></pre>
+<pre><code>## [1] 13737    37</code></pre>
 <p>The training set outcomes are sufficiently balanced that a random forest machine learning approach can be used.</p>
 <pre class="r"><code>table(training4$classe)</code></pre>
 <pre><code>## 
@@ -122,7 +124,7 @@ training4 &lt;- cbind(classe=training$classe, training3)</code></pre>
 modFit &lt;- train(classe~., data=training4, method=&quot;rf&quot;)
 stop.time &lt;- Sys.time()
 stop.time - start.time</code></pre>
-<pre><code>## Time difference of 36.01679 mins</code></pre>
+<pre><code>## Time difference of 36.28945 mins</code></pre>
 <pre class="r"><code>fm &lt;- modFit$finalModel
 fm</code></pre>
 <pre><code>## 
@@ -140,8 +142,8 @@ fm</code></pre>
 ## C    0   27 2368    1    0 0.011686144
 ## D    3    0   65 2181    3 0.031527531
 ## E    0    3    7    5 2510 0.005940594</code></pre>
-<p>Note the OOB (out-of-bag) error estimate rate of 1.3% which is the random forest out-of-sample error estimate.</p>
-<p>The top 5 most important variables are listed below along with a plot of the top two variables color coded by the classe outcomes. Note how there is structure to the data, but the decision tree rules themselves are not obvious.</p>
+<p>Note the OOB (out-of-bag) error estimate rate of 1.4% which is the random forest out-of-sample error estimate.</p>
+<p>The top 5 most important variables are listed below. There was no obvious cutoff for reducing the number of variables further. A plot is shown with the top two variables color coded by the classe outcomes. Note how there is structure to the data, but the decision tree rules themselves are not obvious.</p>
 <pre class="r"><code>vi &lt;- varImp(fm)
 vi &lt;- vi[order(vi,decreasing=TRUE),1,drop=FALSE] # sort decreasing and keep row names
 vi[1:5,1,drop=FALSE] # top five important variables for model (drop=F =&gt; with names)</code></pre>
@@ -167,7 +169,7 @@ oose &lt;- 1- sum(table(predTest,testing$classe)*diag(rep(1,5)))/
     sum(table(predTest,testing$classe))
 oose</code></pre>
 <pre><code>## [1] 0.0115548</code></pre>
-<p>Note that this cross-validation out-of-sample-error of 1.1% is close to the random forest OOB estimate.</p>
+<p>Note that this cross-validation out-of-sample-error of 1.2% is close to the random forest OOB estimate.</p>
 </div>
 <div id="conclusions" class="section level3">
 <h3>Conclusions</h3>
